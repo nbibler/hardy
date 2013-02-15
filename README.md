@@ -12,7 +12,8 @@ Stop guessing and find out! It's easy!!
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add this line to your application's Gemfile (probably not in the default group,
+but more likely in a :test or :development group):
 
     gem 'hardy'
 
@@ -119,7 +120,7 @@ ranging from defining your output file to changing the data directory, and
 more. Check out `hardy help convert` for more details. Below are a few details
 of the more interesting ones:
 
-`host-filter` will restrict the generated URLs file to only include requests to
+`--host-filter` will restrict the generated URLs file to only include requests to
 the given host. This is very useful if your site uses a CDN for assets and you
 do not want to include those requests in your load test (that would be a bad
 idea!).
