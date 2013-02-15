@@ -112,6 +112,29 @@ it to a [siege URLs file][urls-file]:
 By default, this will create a `urls.siege` file and a `data` directory full of
 data files to support it.
 
+### Hardy options
+
+There are a handful of command line options when running the convert task,
+ranging from defining your output file to changing the data directory, and
+more. Check out `hardy help convert` for more details. Below are a few details
+of the more interesting ones:
+
+`host-filter` will restrict the generated URLs file to only include requests to
+the given host. This is very useful if your site uses a CDN for assets and you
+do not want to include those requests in your load test (that would be a bad
+idea!).
+
+`--host` will replace the request hosts for all generated URLs with the host
+given. This is useful if you're generating your HAR script on one system (say,
+your staging server) and want to run the siege test against another (perhaps
+your production stack).
+
+`--protocol` will replace the request protocols for all generated URLs with the
+protocol given. This is useful for creating one script where you're load
+testing `https://` and another where you're load testing `http://`. Again,
+commonly useful when you're generating your HAR from a system different from
+the on you're running your siege against.
+
 ### Using siege
 
 Now, to use siege with your shiny new URLs file (and data directory), here's an
