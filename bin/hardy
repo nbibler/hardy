@@ -102,7 +102,13 @@ module Hardy
     end
 
     def protocol_for(uri)
-      options[:protocol] || "%s://" % uri.scheme
+      if protocol = options[:protocol]
+        options[:protocol] =~ /:\/\// ?
+          options[:protocol] :
+          options[:protocol] + "://"
+      else
+        "%s://" % uri.scheme
+      end
     end
 
     def host_for(uri)
