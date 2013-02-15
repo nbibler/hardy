@@ -136,6 +136,14 @@ testing `https://` and another where you're load testing `http://`. Again,
 commonly useful when you're generating your HAR from a system different from
 the on you're running your siege against.
 
+An example where we've generated a `my-site.env` HAR file by walking our
+staging site (http://staging.my-site.com) and we want to have siege run against
+our production site (https://www.my-site.com):
+
+```
+$ hardy my-site.env --host-filter=staging.my-site.com --host=www.my-site.com --protocol=https://
+```
+
 ### Using siege
 
 Now, to use siege with your shiny new URLs file (and data directory), here's an
