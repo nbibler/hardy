@@ -139,7 +139,6 @@ module Hardy
 
     def url_for(uri)
       path = uri.path
-      #path += ".json" unless path =~ /\./ || path[-1] == '/'
 
       url = "%{proto}%{host}%{path}" % {
         proto: protocol_for(uri),
