@@ -4,7 +4,11 @@ Hardy is a [Thor][thor] library which easily converts an [HTTP Archive
 (HAR)][har] file into a [siege][siege] URLs file.
 
 What does that mean for you? Well, it means that it's now a trivial task to
-generate load testing scripts for your HTTP(S) web applications.
+generate load testing scripts for your HTTP(S) web applications and determine
+exactly how many concurrent, active, hammering-away-on-your-systems users your
+application and infrastructure can fully support.
+
+Stop guessing and find out! It's easy!!
 
 ## Installation
 
