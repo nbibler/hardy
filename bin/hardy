@@ -1,0 +1,150 @@
+#!/usr/bin/env ruby
+
+require 'delegate'
+require 'digest'
+
+require 'addressable/uri'
+require 'mime/types'
+require 'har'
+require 'thor'
+
+class RequestWithURI < BasicObject
+  def initialize(request)
+    @request = request
+  end
+
+  def uri
+    @uri ||= ::Addressable::URI.parse(url)
+  end
+
+  def method_missing(method, *args, &block)
+    @request.public_send(method, *args, &block)
+  end
+end
+
+module Hardy
+  class Siege < Thor
+    desc "convert HAR_PATH", "convert a HAR file to a siege URLs file"
+    method_option :data_path, :type => :string, :aliases => '-d', :default => 'data', :desc => 'directory to output request data for POST/PUT requests'
+    method_option :host_filter, :type => :string, :desc => 'filter the HAR content to only a matching host'
+    method_option :force, :type => :boolean, :aliases => '-f', :default => false, :desc => 'override output if it already exists'
+    method_option :host, :type => :string, :aliases => '-h', :desc => 'convert source HAR hosts into a different URL host'
+    method_option :output, :type => :string, :aliases => '-o', :default => 'urls.siege', :desc => 'file path populate with URL content'
+    method_option :protocol, :type => :string, :aliases => '-p', :desc => 'convert source HAR protocol into a different protocol'
+    def convert(har_path)
+      if File.exist?(options[:output])
+        if File.directory?(options[:output])
+          abort("Must specify a filename, #{options[:output].inspect} is a directory")
+        elsif options[:force]
+          FileUtils.rm(options[:output])
+        else
+          abort("Output file already exists, use -f to force.")
+        end
+      end
+
+      siege_lines = []
+      HAR::Archive.from_file(har_path).entries.each do |entry|
+        siege_lines << create_siege_entry_from(RequestWithURI.new(entry.request))
+      end
+
+      File.open(options[:output], 'w') do |file|
+        file.puts siege_lines.compact.join("\n")
+      end
+    end
+
+
+    private
+
+
+    def create_data_file(filename, data)
+      File.open(filename, 'w') do |file|
+        file.write data
+      end
+    end
+
+    def create_siege_entry_from(request)
+      if host_filter && request.uri.host.downcase != host_filter.downcase
+        return
+      end
+
+      siege_url_for(request)
+    end
+
+    def data_filename_for(request)
+      post_data = request.post_data.text rescue nil
+
+      if post_data
+        content_type = request.headers.detect { |header| header['name'] == 'Content-Type' } || {'value' => 'text/html'}
+        content_type = content_type['value'].split(';', 2).first
+        mime_type = MIME::Types[content_type].first
+
+        "%{data_path}%{basename}.%{extension}" % {
+          data_path: data_path,
+          basename: Digest::MD5.hexdigest(request.post_data.text),
+          extension: mime_type ? mime_type.extensions.first : 'postdata'
+        }
+      end
+    end
+
+    def data_path
+      if options[:data_path]
+        FileUtils.mkdir(options[:data_path]) unless File.exist?(options[:data_path])
+        options[:data_path] + "/"
+      end
+    end
+
+    def host_filter
+      options[:host_filter]
+    end
+
+    def host_for(uri)
+      options[:host] || uri.host
+    end
+
+    def protocol_for(uri)
+      options[:protocol] || "%s://" % uri.scheme
+    end
+
+    def host_for(uri)
+      options[:host] || uri.host
+    end
+
+    def siege_url_for(request)
+      url = url_for(request.uri)
+
+      case request.method
+      when 'GET'
+        url
+      when 'POST', 'PUT'
+        if filename = data_filename_for(request)
+          create_data_file(filename, request.post_data.text)
+          "%{url} %{method} < %{filename}" % {
+            url: url,
+            method: request.method,
+            filename: filename
+          }
+        else
+          "%s POST 1=1" % url
+        end
+      else
+        raise NotImplementedError, "received a #{request.method.inspect} request, unhandled"
+      end
+    end
+
+    def url_for(uri)
+      path = uri.path
+      #path += ".json" unless path =~ /\./ || path[-1] == '/'
+
+      url = "%{proto}%{host}%{path}" % {
+        proto: protocol_for(uri),
+        host: host_for(uri),
+        path: path
+      }
+
+      url += "?#{uri.query}" if uri.query
+      url
+    end
+  end
+end
+
+Hardy::Siege.start
