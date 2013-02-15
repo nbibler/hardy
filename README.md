@@ -67,16 +67,6 @@ and Ubuntu package already enable this, by default.
 
     $ ./configure --with-ssl
 
-## Usage
-
-Once you've created or otherwise acquired your HAR file, use Hardy to convert
-it to a [siege URLs file][urls-file]:
-
-    $ hardy convert my-har-file.env
-
-By default, this will create a `urls.siege` file and a `data` directory full of
-data files to support it.
-
 ### Enabling JSON support in siege
 
 So, you're load testing a web application which uses JSON, huh? Does it look
@@ -107,6 +97,31 @@ Just add an entry to allow `.json` files to be recognized and transmitted as
 siege, as detailed above. Now, when the URLs file defines a `.json` file, siege
 will automatically recognize it and make the request with the proper
 `Content-Type` request header.
+
+## Usage
+
+Once you've created or otherwise acquired your HAR file, use Hardy to convert
+it to a [siege URLs file][urls-file]:
+
+    $ hardy convert my-har-file.env
+
+By default, this will create a `urls.siege` file and a `data` directory full of
+data files to support it.
+
+### Using siege
+
+Now, to use siege with your shiny new URLs file (and data directory), here's an
+example:
+
+    $ siege -c5 -d10 -t5M -v -f urls.siege
+
+This tells siege to run with 5 concurrent users (-c5), ramping them up over 10
+seconds (-d10), running with all 5 users active for 5 minutes (-t5M),
+displaying the request results to the screen (-v), and sourcing your URLs file
+for their run script (-f urls.siege).
+
+siege offers a lot of settings options, so check out `siege --help` for more
+information.
 
 ## Contributing
 
