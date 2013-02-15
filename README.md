@@ -45,8 +45,8 @@ You now have a HAR file to source for load testing! :beer:
 ### Installing siege
 
 Note: If you are planning on testing a site which uses a JSON interface, you'll
-want to read the Enabling JSON support in siege section further down this
-README.
+want to read the [Enabling JSON support in
+siege](#enabling-json-support-in-siege) section further down this README.
 
 On a Mac, you can install siege with homebrew:
 
@@ -81,8 +81,8 @@ application/json` request header. Bummer.
 
 But you need JSON support, you say? Yeah, me too. Sadly, that means you get to
 edit some C source code. So, download the latest source (as instructed in the
-Installing siege section, above) and before you `./configure`, you'll need to
-edit `src/load.c`:
+[Installing siege](#installing-siege) section, above) and before you
+`./configure`, you'll need to edit `src/load.c`:
 
 ```diff
 static const struct ContentType tmap[] = {
@@ -98,9 +98,9 @@ static const struct ContentType tmap[] = {
 
 Just add an entry to allow `.json` files to be recognized and transmitted as
 "application/json" format. Once that's done, re-configure, build, and install
-siege, as detailed above. Now, when the URLs file defines a `.json` file, siege
-will automatically recognize it and make the request with the proper
-`Content-Type` request header.
+siege, as [detailed above](#installing-siege). Now, when the URLs file defines
+a `.json` file, siege will automatically recognize it and make the request with
+the proper `Content-Type` request header.
 
 ## Usage
 
